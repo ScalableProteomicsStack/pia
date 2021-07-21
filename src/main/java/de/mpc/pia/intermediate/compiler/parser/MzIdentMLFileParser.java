@@ -414,7 +414,7 @@ class MzIdentMLFileParser {
         boolean ok = true;
         for (SpectrumIdentificationResult specIdRes : specIDList.getSpectrumIdentificationResult()) {
             ok = addSpectrumIdentificationResult(specIdRes, spectrumID, specIDListsDBRefs, specIDListsEnzymes,
-                    analysisSoftwareName);
+                    analysisSoftwareName, specIdRes.getSpectraDataRef());
             if (!ok) {
                 break;
             }
@@ -435,7 +435,7 @@ class MzIdentMLFileParser {
      */
     private boolean addSpectrumIdentificationResult(SpectrumIdentificationResult specIdResult,
             SpectrumIdentification spectrumID, Set<String> specIDListsDBRefs, Enzymes specIDListsEnzymes,
-            String analysisSoftwareName) {
+            String analysisSoftwareName, String spectraDataRef) {
         String sourceID = parseSourceID(specIdResult);
         String spectrumTitle = parseSpectrumTitle(specIdResult);
         Double retentionTime = parseRetentionTime(specIdResult);
@@ -450,7 +450,7 @@ class MzIdentMLFileParser {
         for (SpectrumIdentificationItem specIdItem : specIdResult.getSpectrumIdentificationItem()) {
 
             ok = processSpectrumIdentificationItem(specIdItem, resultParams, sourceID, spectrumTitle, retentionTime,
-                    spectrumID, specIDListsDBRefs, specIDListsEnzymes, analysisSoftwareName);
+                    spectrumID, specIDListsDBRefs, specIDListsEnzymes, analysisSoftwareName, spectraDataRef);
             if (!ok) {
                 break;
             }
@@ -571,7 +571,7 @@ class MzIdentMLFileParser {
      */
     private boolean processSpectrumIdentificationItem(SpectrumIdentificationItem specIdItem, ParamList resultParams,
             String sourceID, String spectrumTitle, Double retentionTime, SpectrumIdentification spectrumID,
-            Set<String> specIDListsDBRefs, Enzymes specIDListsEnzymes, String analysisSoftwareName) {
+            Set<String> specIDListsDBRefs, Enzymes specIDListsEnzymes, String analysisSoftwareName, String spectraDataRef) {
         double deltaMass = calculateDeltaMass(specIdItem);
         uk.ac.ebi.jmzidml.model.mzidml.Peptide peptide = peptides.get(specIdItem.getPeptideRef());
 
@@ -604,7 +604,8 @@ class MzIdentMLFileParser {
                 sourceID,
                 spectrumTitle,
                 file,
-                spectrumID);
+                spectrumID,
+                spectraDataRef);
         psm.setIsDecoy(isDecoy);
 
         AbstractParam cv = new CvParam();
@@ -745,8 +746,8 @@ class MzIdentMLFileParser {
             LOGGER.error("No peptide sequence found for a peptide!");
         }
 
-        if ((start != null) && (end != null) && (proteinSequence != null) && (peptide != null)
-                && proteinSequence.trim().length() > 0) {
+       if ((start != null) && (end != null) && (proteinSequence != null) && (peptide != null)
+                    && proteinSequence.trim().length() > 0) {
 
             // some exporters get the start and stop of sequences wrong
             if (start-1 < 0) {
